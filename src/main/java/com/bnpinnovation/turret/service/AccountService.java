@@ -7,6 +7,9 @@ import com.bnpinnovation.turret.repository.AccountRepository;
 import com.bnpinnovation.turret.repository.AccountRoleRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityExistsException;
@@ -18,7 +21,7 @@ public interface AccountService {
 
     @Service
     @Slf4j
-    class Default implements AccountService {
+    class Default implements AccountService, UserDetailsService {
         @Autowired
         private AccountRepository accountRepository;
         @Autowired
@@ -46,6 +49,13 @@ public interface AccountService {
 
             Account savedAccount = accountRepository.save(account);
             return savedAccount.id();
+        }
+
+        @Override
+        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+            return accountRepository.findByUsername(username)
+                    .orElseThrow(()->new UsernameNotFoundException(username+" is not exist"))
+                    .generateUserDetails();
         }
     }
 }

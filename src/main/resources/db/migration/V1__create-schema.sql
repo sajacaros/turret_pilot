@@ -7,6 +7,8 @@ create table oauth_account (
   enabled boolean not null,
   password varchar(255),
   username varchar(40),
+  creeated timestamp,
+  updated timestamp,
   primary key (account_id)
 );
 

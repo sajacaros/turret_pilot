@@ -1,9 +1,6 @@
 package com.bnpinnovation.turret.domain;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.security.core.userdetails.User;
@@ -17,7 +14,6 @@ import java.util.Set;
 
 @NoArgsConstructor
 @Entity
-@Builder
 public class Account {
     @Id
     @Column(name="ACCOUNT_ID")
@@ -32,6 +28,25 @@ public class Account {
     private boolean accountNonExpired; // 계정 만료 여부
     private boolean credentialsNonExpired; // 패스워드 만료 여부
     private boolean accountNonLocked; // 계정 잠금 여부
+
+    @Builder
+    public Account(
+            String username,
+            String password,
+            String name,
+            boolean enabled,
+            boolean accountNonExpired,
+            boolean credentialsNonExpired,
+            boolean accountNonLocked
+    ) {
+        this.username = username;
+        this.password = password;
+        this.name = name;
+        this.enabled = enabled;
+        this.accountNonExpired = accountNonExpired;
+        this.credentialsNonExpired = credentialsNonExpired;
+        this.accountNonLocked = accountNonLocked;
+    }
 
     @ManyToMany
     @JoinTable(name = "USER_ROLE", joinColumns = @JoinColumn(name = "USER_ID"), inverseJoinColumns = @JoinColumn(name = "ROLE_ID"))

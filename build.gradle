@@ -28,10 +28,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
-
-
-//    // https://mvnrepository.com/artifact/org.flywaydb/flyway-core
-//    implementation group: 'org.flywaydb', name: 'flyway-core', version: '7.7.3'
+    // https://mvnrepository.com/artifact/org.flywaydb/flyway-core
+//    implementation 'org.flywaydb:flyway-core'
 
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
