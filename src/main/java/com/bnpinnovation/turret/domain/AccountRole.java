@@ -16,8 +16,16 @@ public class AccountRole implements GrantedAuthority {
     @Column(name = "ROLE_NAME", nullable = false)
     private String roleName;
 
+    public AccountRole(String name) {
+        this.roleName = name;
+    }
+
     @Override
     public String getAuthority() {
         return roleName;
+    }
+
+    public Long id() {
+        return this.id;
     }
 }

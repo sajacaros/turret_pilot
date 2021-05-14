@@ -3,6 +3,7 @@ package com.bnpinnovation.turret.domain;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -12,9 +13,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-@NoArgsConstructor
 @Entity
-public class Account {
+@NoArgsConstructor
+@Getter
+public class Account extends TimeEntity {
     @Id
     @Column(name="ACCOUNT_ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +30,11 @@ public class Account {
     private boolean accountNonExpired; // 계정 만료 여부
     private boolean credentialsNonExpired; // 패스워드 만료 여부
     private boolean accountNonLocked; // 계정 잠금 여부
+
+    @ManyToMany
+    @JoinTable(name = "USER_ROLE", joinColumns = @JoinColumn(name = "USER_ID"), inverseJoinColumns = @JoinColumn(name = "ROLE_ID"))
+    @Setter(AccessLevel.NONE)
+    private Set<AccountRole> roles = new HashSet<>();
 
     @Builder
     public Account(
@@ -48,18 +55,6 @@ public class Account {
         this.accountNonLocked = accountNonLocked;
     }
 
-    @ManyToMany
-    @JoinTable(name = "USER_ROLE", joinColumns = @JoinColumn(name = "USER_ID"), inverseJoinColumns = @JoinColumn(name = "ROLE_ID"))
-    @Setter(AccessLevel.NONE)
-    private Set<AccountRole> roles = new HashSet<>();
-
-    @CreatedDate
-    @Column(columnDefinition = "TIMESTAMP", nullable = false)
-    private LocalDateTime created;
-    @LastModifiedDate
-    @Column(columnDefinition = "TIMESTAMP", nullable = false)
-    private LocalDateTime updated;
-
     public UserDetails generateUserDetails() {
         return new User(username,password,enabled,accountNonExpired,credentialsNonExpired,accountNonLocked,roles());
     }
@@ -72,7 +67,7 @@ public class Account {
         roles.add(role);
     }
 
-    public void addRoles(Set<AccountRole> roles) {
+    public void addRoles(Iterable<AccountRole> roles) {
         for(AccountRole role : roles) {
             addRole(role);
         }

@@ -2,17 +2,23 @@ package com.bnpinnovation.turret.controller;
 
 import com.bnpinnovation.turret.dto.AccountForm;
 import com.bnpinnovation.turret.service.AccountService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/scv")
 public class AccountController {
-    @Autowired
-    private AccountService accountService;
+    private final AccountService accountService;
+
+    public AccountController(AccountService accountService) {
+        this.accountService = accountService;
+    }
 
     @PostMapping
-    public Long newAccount(AccountForm.NewAccount account) {
+    @RequestMapping("/account")
+    public Long newAccount(@RequestBody AccountForm.NewAccount account) {
         return accountService.newAccount(account);
     }
 }
