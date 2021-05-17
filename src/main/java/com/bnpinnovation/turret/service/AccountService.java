@@ -6,6 +6,8 @@ import com.bnpinnovation.turret.dto.AccountForm;
 import com.bnpinnovation.turret.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -33,20 +35,17 @@ public interface AccountService {
 
         @Override
         public Long newAccount(AccountForm.NewAccount accountDto) {
-            log.info("account : {}", accountDto);
-            Optional<Account> accountOptional = accountRepository.findByUsername(accountDto.getUsername());
-            if(accountOptional.isPresent()) {
-                throw new EntityExistsException(accountOptional.get().name()+"이 존재함");
-            }
-
             List<AccountRole> roleList = accountDto.getRoles().stream()
                     .map(r->getAccountRole(r))
                     .collect(Collectors.toList());
+            IncorrectResultSizeDataAccessException a;
+            DuplicateKeyException d;
 
             Account account = Account.builder()
                     .username(accountDto.getUsername())
                     .password(accountDto.getPassword())
                     .name(accountDto.getName())
+                    .enabled(true)
                     .accountNonExpired(true)
                     .accountNonLocked(true)
                     .credentialsNonExpired(true)

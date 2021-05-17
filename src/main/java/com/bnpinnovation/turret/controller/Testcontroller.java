@@ -2,6 +2,7 @@ package com.bnpinnovation.turret.controller;
 
 import com.bnpinnovation.turret.dto.SecurityMessage;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class Testcontroller {
 
-    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    @PreAuthorize("hasAnyAuthority({'ROLE_USER', 'ROLE_ADMIN'})")
     @GetMapping("/user")
     public SecurityMessage user() {
         return SecurityMessage.builder()
@@ -18,7 +19,8 @@ public class Testcontroller {
                 .build();
     }
 
-    @Secured({"ROLE_ADMIN"})
+
+    @PreAuthorize("hasAnyAuthority({'ROLE_ADMIN'})")
     @GetMapping("/admin")
     public SecurityMessage admin() {
         return SecurityMessage.builder()

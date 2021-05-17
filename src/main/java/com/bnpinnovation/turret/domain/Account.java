@@ -1,21 +1,19 @@
 package com.bnpinnovation.turret.domain;
 
-import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @NoArgsConstructor
-@Getter
 public class Account extends TimeEntity {
     @Id
     @Column(name="ACCOUNT_ID")
@@ -87,5 +85,29 @@ public class Account extends TimeEntity {
 
     public Long id() {
         return id;
+    }
+
+    public String username() {
+        return this.username;
+    }
+
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    public String password() {
+        return this.password;
+    }
+
+    public boolean isAccountNonExpired() {
+        return this.accountNonExpired;
+    }
+
+    public boolean isAccountNonLocked() {
+        return this.accountNonLocked;
+    }
+
+    public boolean isCredentialsNonExpired() {
+        return this.credentialsNonExpired;
     }
 }

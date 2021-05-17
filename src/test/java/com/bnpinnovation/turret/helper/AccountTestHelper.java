@@ -1,5 +1,6 @@
-package com.bnpinnovation.turret;
+package com.bnpinnovation.turret.helper;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
 import com.bnpinnovation.turret.domain.Account;
 import com.bnpinnovation.turret.domain.AccountRole;
 import com.bnpinnovation.turret.dto.AccountForm;
@@ -55,9 +56,14 @@ public class AccountTestHelper {
         Assertions.assertTrue(account.isAccountNonExpired());
         Assertions.assertTrue(account.isAccountNonLocked());
         Assertions.assertTrue(account.isCredentialsNonExpired());
-        Assertions.assertEquals(username, account.getUsername());
-        Assertions.assertEquals(username+"p", account.getPassword());
-        Assertions.assertEquals(username+"d", account.getName());
-        Assertions.assertTrue(account.roles().contains(roleName));
+        Assertions.assertEquals(username, account.username());
+        Assertions.assertEquals(username+"p", account.password());
+        Assertions.assertEquals(username+"d", account.name());
+        Assertions.assertTrue(
+                account.roles().stream()
+                        .map(r->r.getAuthority())
+                        .filter(rn->roleName.equalsIgnoreCase(rn))
+                        .findAny().isPresent()
+        );
     }
 }

@@ -13,7 +13,7 @@ public class AccountRole implements GrantedAuthority {
     @Column(name = "ROLE_ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "ROLE_NAME", nullable = false)
+    @Column(name = "ROLE_NAME", nullable = false, unique = true)
     private String roleName;
 
     public AccountRole(String name) {
