@@ -26,8 +26,8 @@ public class AccountTest {
 
     private AccountTestHelper accountHelper;
 
-    String username = "hello";
-    String roleName = "master";
+    private String username = "hello";
+    private String roleName = "master";
 
     @BeforeEach
     void before() {

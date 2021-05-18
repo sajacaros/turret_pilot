@@ -1,8 +1,11 @@
 package com.bnpinnovation.turret.config;
 
-import com.bnpinnovation.turret.filter.JWTLoginFilter;
+import com.bnpinnovation.turret.security.JWTUtil;
+import com.bnpinnovation.turret.security.filter.JWTLoginFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,13 +14,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.header.writers.StaticHeadersWriter;
-import org.springframework.security.web.header.writers.frameoptions.WhiteListedAllowFromStrategy;
-import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 
 import javax.servlet.Filter;
-import java.util.Arrays;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
@@ -25,6 +23,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private ObjectMapper mapper;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -44,9 +45,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         ;
     }
 
-    @Bean
-    public Filter usernamePasswordFilter() {
-        return new JWTLoginFilter();
+    @Override
+    protected AuthenticationManager authenticationManager() throws Exception {
+        return super.authenticationManager();
+    }
+
+    public Filter usernamePasswordFilter() throws Exception {
+        return new JWTLoginFilter(authenticationManager(), jwtUtil(), mapper);
     }
 
 //    @Bean
@@ -67,5 +72,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     PasswordEncoder passwordDecoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    JWTUtil jwtUtil() {
+        return new JWTUtil();
     }
 }
