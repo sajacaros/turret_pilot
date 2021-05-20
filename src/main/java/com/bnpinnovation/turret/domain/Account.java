@@ -1,9 +1,6 @@
 package com.bnpinnovation.turret.domain;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -14,6 +11,7 @@ import java.util.Set;
 
 @Entity
 @NoArgsConstructor
+@ToString(exclude = {"roles"})
 public class Account extends TimeEntity {
     @Id
     @Column(name="ACCOUNT_ID")
@@ -29,7 +27,7 @@ public class Account extends TimeEntity {
     private boolean credentialsNonExpired; // 패스워드 만료 여부
     private boolean accountNonLocked; // 계정 잠금 여부
 
-    @ManyToMany
+    @ManyToMany(fetch=FetchType.EAGER)
     @JoinTable(name = "USER_ROLE", joinColumns = @JoinColumn(name = "USER_ID"), inverseJoinColumns = @JoinColumn(name = "ROLE_ID"))
     @Setter(AccessLevel.NONE)
     private Set<AccountRole> roles = new HashSet<>();
@@ -58,7 +56,11 @@ public class Account extends TimeEntity {
     }
 
     public Set<AccountRole> roles() {
-        return Collections.unmodifiableSet(roles);
+        if(roles.isEmpty()) {
+            return Collections.emptySet();
+        } else {
+            return Collections.unmodifiableSet(roles);
+        }
     }
 
     public void addRole(AccountRole role) {

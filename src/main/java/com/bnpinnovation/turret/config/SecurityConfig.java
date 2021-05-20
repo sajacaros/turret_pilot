@@ -1,7 +1,9 @@
 package com.bnpinnovation.turret.config;
 
 import com.bnpinnovation.turret.security.JWTUtil;
+import com.bnpinnovation.turret.security.filter.JWTCheckFilter;
 import com.bnpinnovation.turret.security.filter.JWTLoginFilter;
+import com.bnpinnovation.turret.service.AccountService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +24,7 @@ import javax.servlet.Filter;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private AccountService userDetailsService;
 
     @Autowired
     private ObjectMapper mapper;
@@ -36,7 +38,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
-                .addFilter(usernamePasswordFilter())
+                .addFilter(authenticationFilter())
+                .addFilter(authorizationFilter())
                 .authorizeRequests()
                     .antMatchers("/h2-console/**").permitAll()
                 .and()
@@ -50,8 +53,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManager();
     }
 
-    public Filter usernamePasswordFilter() throws Exception {
+    public Filter authenticationFilter() throws Exception {
         return new JWTLoginFilter(authenticationManager(), jwtUtil(), mapper);
+    }
+
+    public Filter authorizationFilter() throws Exception {
+        return new JWTCheckFilter(authenticationManager(), userDetailsService, jwtUtil());
     }
 
 //    @Bean

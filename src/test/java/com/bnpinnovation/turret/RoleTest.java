@@ -10,9 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,11 +21,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @Transactional
+@ActiveProfiles("test")
 public class RoleTest {
     @Autowired
     private AccountService accountService;
     @Autowired
     private RoleService roleService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private AccountTestHelper accountHelper;
 
@@ -32,7 +36,9 @@ public class RoleTest {
 
     @BeforeEach
     void before() {
-        this.accountHelper = new AccountTestHelper(accountService,roleService);
+        if( this.accountHelper == null) {
+            this.accountHelper = new AccountTestHelper(accountService, roleService, passwordEncoder);
+        }
     }
 
     @DisplayName("1. 존재하지 않는 role을 조회한다.")

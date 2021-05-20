@@ -1,9 +1,6 @@
 package com.bnpinnovation.turret.dto;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 
@@ -12,6 +9,8 @@ public class AccountForm {
 	@Getter
 	@ToString
 	@NoArgsConstructor
+	@Builder
+	@AllArgsConstructor
 	public static class NewAccount {
 		private String username;
 		private String password;

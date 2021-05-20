@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
@@ -23,6 +25,8 @@ public class AccountTest {
     private AccountService accountService;
     @Autowired
     private RoleService roleService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private AccountTestHelper accountHelper;
 
@@ -31,7 +35,9 @@ public class AccountTest {
 
     @BeforeEach
     void before() {
-        this.accountHelper = new AccountTestHelper(accountService,roleService);
+        if( this.accountHelper == null) {
+            this.accountHelper = new AccountTestHelper(accountService, roleService, passwordEncoder);
+        }
     }
 
     @DisplayName("1. 사용자를 생성한다.")

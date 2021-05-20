@@ -6,44 +6,48 @@ import com.bnpinnovation.turret.dto.AccountForm;
 import com.bnpinnovation.turret.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityExistsException;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public interface AccountService {
+public interface AccountService extends UserDetailsService {
     Long newAccount(AccountForm.NewAccount account);
 
     Optional<Account> findAccount(Long id);
 
+    List<Account> findAll();
+
+    boolean existUserName(String username);
+
+    Account getAccount(String username);
+
     @Service
     @Slf4j
     @Transactional
-    class Default implements AccountService, UserDetailsService {
+    class Default implements AccountService {
         @Autowired
         private AccountRepository accountRepository;
         @Autowired
         private RoleService roleService;
+        @Autowired
+        private PasswordEncoder passwordEncoder;
 
         @Override
         public Long newAccount(AccountForm.NewAccount accountDto) {
             List<AccountRole> roleList = accountDto.getRoles().stream()
                     .map(r->getAccountRole(r))
                     .collect(Collectors.toList());
-            IncorrectResultSizeDataAccessException a;
-            DuplicateKeyException d;
 
             Account account = Account.builder()
                     .username(accountDto.getUsername())
-                    .password(accountDto.getPassword())
+                    .password(passwordEncoder.encode(accountDto.getPassword()))
                     .name(accountDto.getName())
                     .enabled(true)
                     .accountNonExpired(true)
@@ -59,6 +63,22 @@ public interface AccountService {
         @Override
         public Optional<Account> findAccount(Long id) {
             return accountRepository.findById(id);
+        }
+
+        @Override
+        public List<Account> findAll() {
+            return accountRepository.findAll();
+        }
+
+        @Override
+        public boolean existUserName(String username) {
+            return accountRepository.findByUsername(username).isPresent();
+        }
+
+        @Override
+        public Account getAccount(String username) {
+            return accountRepository.findByUsername(username)
+                    .orElseThrow(()->new UsernameNotFoundException(username+" not exist"));
         }
 
         @Override
