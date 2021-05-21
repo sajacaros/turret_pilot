@@ -22,6 +22,7 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
@@ -84,20 +85,20 @@ public class JWTLoginFilterTest {
     @Test
     void test_jwtLogin_failed() {
         assertThrows(AuthenticationServiceException.class, ()->
-                getToken(username, username,
-                        new ResponseErrorHandler(){
-                            @Override
-                            public boolean hasError(ClientHttpResponse response) {
-                                return true;
-                            }
+            getToken(username, username,
+                new ResponseErrorHandler(){
+                    @Override
+                    public boolean hasError(ClientHttpResponse response) {
+                        return true;
+                    }
 
-                            @Override
-                            public void handleError(ClientHttpResponse response) throws IOException {
-                                if(HttpServletResponse.SC_UNAUTHORIZED == response.getRawStatusCode()) {
-                                    throw new AuthenticationServiceException(response.getStatusText());
-                                }
-                            }
-                        })
+                    @Override
+                    public void handleError(ClientHttpResponse response) throws IOException {
+                        if(HttpServletResponse.SC_UNAUTHORIZED == response.getRawStatusCode()) {
+                            throw new AuthenticationServiceException(response.getStatusText());
+                        }
+                    }
+                })
         );
     }
 
