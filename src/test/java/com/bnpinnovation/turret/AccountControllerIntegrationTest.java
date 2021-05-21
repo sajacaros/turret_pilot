@@ -88,7 +88,7 @@ public class AccountControllerIntegrationTest {
     void test_create_account_by_admin() throws URISyntaxException {
         String testUsername = "aa";
         String accessToken = getToken(adminUsername, adminUsername+"p");
-        Long userId = newAccount(accessToken,testUsername,testUsername+"p",roleName, null);
+        Long userId = newAccount(accessToken,testUsername,testUsername+"p",roleName);
         Optional<Account> searchedAccount = accountService.findAccount(userId);
         assertTrue(searchedAccount.isPresent());
         assertEquals(testUsername, searchedAccount.get().username());
@@ -129,6 +129,9 @@ public class AccountControllerIntegrationTest {
         return response.getHeaders().get(JWTUtil.AUTHENTICATION).get(0).substring(JWTUtil.BEARER.length());
     }
 
+    private Long newAccount(String token, String name, String password, String roleName) throws URISyntaxException {
+        return newAccount(token,name,password,roleName,null);
+    }
     private Long newAccount(String token, String name, String password, String roleName,  ResponseErrorHandler errorHandler) throws URISyntaxException {
         AccountForm.NewAccount newAccount = AccountForm.NewAccount.builder()
                 .username(name)

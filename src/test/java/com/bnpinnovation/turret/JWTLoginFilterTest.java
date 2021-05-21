@@ -75,7 +75,7 @@ public class JWTLoginFilterTest {
     @Test
     void test_jwtLogin() throws URISyntaxException {
         Algorithm al = Algorithm.HMAC512("hello");
-        String accessToken = getToken(username, username+"p", null);
+        String accessToken = getToken(username, username+"p");
 
         DecodedJWT decodedJWT = JWT.require(al).build().verify(accessToken);
         assertEquals(username, decodedJWT.getClaims().get("sub").asString());
@@ -104,6 +104,10 @@ public class JWTLoginFilterTest {
 
     private URI uri(String path) throws URISyntaxException {
         return new URI(String.format("http://localhost:%d%s", port, path));
+    }
+
+    private String getToken(String username, String password) throws URISyntaxException {
+        return getToken(username,password,null);
     }
 
     private String getToken(String username, String password, ResponseErrorHandler errorHandler) throws URISyntaxException {
