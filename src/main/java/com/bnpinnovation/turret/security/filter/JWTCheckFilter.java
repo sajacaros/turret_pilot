@@ -32,16 +32,17 @@ public class JWTCheckFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        String token = request.getHeader("Authentication");
-        if(token == null || !token.startsWith("Bearer ")) {
+        String token = request.getHeader(JWTUtil.AUTHENTICATION);
+        if(token == null || !token.startsWith(JWTUtil.BEARER)) {
             chain.doFilter(request,response);
             return;
         }
-        VerifyResult result = jwtUtil.verify(token.substring("Bearer ".length()));
+        VerifyResult result = jwtUtil.verify(token.substring(JWTUtil.BEARER.length()));
         if(result.isResult()) {
             Account account = accountService.getAccount(result.getUsername());
+            log.info("account.generateUserDetails() : {}",account.generateUserDetails());
             SecurityContextHolder.getContext().setAuthentication(
-                    new UsernamePasswordAuthenticationToken(result.getUsername(), null, account.roles())
+                    new UsernamePasswordAuthenticationToken(account.generateUserDetails(), null, account.roles())
             );
         }
 

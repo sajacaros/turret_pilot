@@ -23,6 +23,9 @@ public interface RoleService {
 
         @Override
         public Long newRole(String roleName) {
+            if(roleRepository.existsByRoleName(roleName)) {
+                return getAccountRole(roleName).id();
+            }
             return roleRepository.save(new AccountRole(roleName)).id();
         }
 

@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,6 +28,10 @@ public interface AccountService extends UserDetailsService {
     boolean existUserName(String username);
 
     Account getAccount(String username);
+
+    Collection<AccountRole> retrieveRole(String username);
+
+    void removeAll();
 
     @Service
     @Slf4j
@@ -79,6 +84,19 @@ public interface AccountService extends UserDetailsService {
         public Account getAccount(String username) {
             return accountRepository.findByUsername(username)
                     .orElseThrow(()->new UsernameNotFoundException(username+" not exist"));
+        }
+
+        @Override
+        public Collection<AccountRole> retrieveRole(String username) {
+            return getAccount(username).roles();
+        }
+
+        @Override
+        public void removeAll() {
+            for( Account account: accountRepository.findAll()) {
+                account.cleanRole();
+                accountRepository.delete(account);
+            }
         }
 
         @Override

@@ -10,7 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,7 +26,6 @@ public class JWTTokenTest {
 
         String token = JWT.create()
                 .withSubject(subject)
-//                .withExpiresAt(new Date())
                 .withClaim("exp", expiredEpoch) // after 3s
                 .withArrayClaim("role", roles)
                 .sign(al);
@@ -47,16 +45,14 @@ public class JWTTokenTest {
 
     @Test
     @DisplayName("2. JWT 토큰 expired")
-    public void test_jwt_expired() throws InterruptedException {
+    public void test_jwt_expired() {
         Algorithm al = Algorithm.HMAC512("hello");
 
         String token = JWT.create()
                 .withSubject("hello")
-//                .withExpiresAt(new Date())
-                .withClaim("exp", Instant.now().getEpochSecond() + 1) // after 1s
+                .withClaim("exp", Instant.now().getEpochSecond() - 1) // before 1s
                 .withArrayClaim("role", new String[]{"ROLE_ADMIN", "ROLE_USER"})
                 .sign(al);
-        Thread.sleep(1500); // dummy
 
         Assertions.assertThrows(TokenExpiredException.class, () -> {
             JWT.require(al).build().verify(token);

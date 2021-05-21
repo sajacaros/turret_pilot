@@ -1,5 +1,6 @@
 package com.bnpinnovation.turret.security;
 
+import antlr.ANTLRStringBuffer;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
@@ -10,6 +11,8 @@ import java.time.Instant;
 
 public class JWTUtil {
 
+    public static final String AUTHENTICATION = "Authentication";
+    public static String BEARER = "Bearer ";
     private String secret = "hello";
     private Algorithm al = Algorithm.HMAC512(secret);
     private long lifeTime = 30; // 30s

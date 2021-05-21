@@ -112,4 +112,8 @@ public class Account extends TimeEntity {
     public boolean isCredentialsNonExpired() {
         return this.credentialsNonExpired;
     }
+
+    public void cleanRole() {
+        roles.clear();
+    }
 }
