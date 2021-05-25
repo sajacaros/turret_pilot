@@ -8,28 +8,19 @@ import com.bnpinnovation.turret.helper.JWTTokenTestHelper;
 import com.bnpinnovation.turret.helper.Tokens;
 import com.bnpinnovation.turret.service.AccountService;
 import com.bnpinnovation.turret.service.RoleService;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.client.ResponseErrorHandler;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class JWTLoginFilterTest {
-
+public class RefreshTokenTest {
     @Autowired
     private AccountService accountService;
     @Autowired
@@ -60,40 +51,13 @@ public class JWTLoginFilterTest {
         accountHelper.createUserAndRole(username, roleName);
     }
 
-    @AfterEach
-    void after() {
-        accountService.removeAll();
-    }
-
-
-    @DisplayName("1. jwt로 로그인 시도")
+    @DisplayName("1. refresh token으로 access token 얻기")
     @Test
-    void test_jwtLogin() throws URISyntaxException {
+    void test_refresh() throws URISyntaxException {
         Algorithm al = Algorithm.HMAC512("hello");
-        Tokens tokens = jwtTokenTestHelper.getToken(username, username+"p");
-
-        DecodedJWT decodedJWT = JWT.require(al).build().verify(tokens.getAccessToken());
-        assertEquals(username, decodedJWT.getClaims().get("sub").asString());
-    }
-
-    @DisplayName("2. 비번 틀림 시도")
-    @Test
-    void test_jwtLogin_failed() {
-        assertThrows(AuthenticationServiceException.class, ()->
-                jwtTokenTestHelper.getToken(username, username,
-                new ResponseErrorHandler(){
-                    @Override
-                    public boolean hasError(ClientHttpResponse response) {
-                        return true;
-                    }
-
-                    @Override
-                    public void handleError(ClientHttpResponse response) throws IOException {
-                        if(HttpServletResponse.SC_UNAUTHORIZED == response.getRawStatusCode()) {
-                            throw new AuthenticationServiceException(response.getStatusText());
-                        }
-                    }
-                })
-        );
+        final Tokens tokens = jwtTokenTestHelper.getToken(username, username+"p");
+        final Tokens reTokens = jwtTokenTestHelper.getRefreshToken(tokens.getRefreshToken());
+        Assertions.assertNotEquals(tokens.getAccessToken(), reTokens.getAccessToken());
+        Assertions.assertNotEquals(tokens.getRefreshToken(), reTokens.getRefreshToken());
     }
 }

@@ -21,3 +21,7 @@ spring:
   jpa:
     hibernate.ddl-auto: validate
     show-sql: true
+life:
+  time:
+    access: 60 # 1m = 60s
+    refresh: 86400 # 1day = 86400s

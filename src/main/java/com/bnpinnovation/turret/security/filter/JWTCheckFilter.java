@@ -4,13 +4,10 @@ import com.bnpinnovation.turret.domain.Account;
 import com.bnpinnovation.turret.dto.VerifyResult;
 import com.bnpinnovation.turret.security.JWTUtil;
 import com.bnpinnovation.turret.service.AccountService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import javax.servlet.FilterChain;
@@ -32,7 +29,7 @@ public class JWTCheckFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        String token = request.getHeader(JWTUtil.AUTHENTICATION);
+        String token = request.getHeader(JWTUtil.AUTHENTICATION_HEADER);
         if(token == null || !token.startsWith(JWTUtil.BEARER)) {
             chain.doFilter(request,response);
             return;
@@ -40,7 +37,6 @@ public class JWTCheckFilter extends BasicAuthenticationFilter {
         VerifyResult result = jwtUtil.verify(token.substring(JWTUtil.BEARER.length()));
         if(result.isResult()) {
             Account account = accountService.getAccount(result.getUsername());
-            log.info("account.generateUserDetails() : {}",account.generateUserDetails());
             SecurityContextHolder.getContext().setAuthentication(
                     new UsernamePasswordAuthenticationToken(account.generateUserDetails(), null, account.roles())
             );

@@ -4,9 +4,10 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bnpinnovation.turret.domain.Account;
-import com.bnpinnovation.turret.dto.AccountForm;
-import com.bnpinnovation.turret.dto.UserLogin;
+import com.bnpinnovation.turret.dto.VerifyResult;
 import com.bnpinnovation.turret.helper.AccountTestHelper;
+import com.bnpinnovation.turret.helper.JWTTokenTestHelper;
+import com.bnpinnovation.turret.helper.Tokens;
 import com.bnpinnovation.turret.security.JWTUtil;
 import com.bnpinnovation.turret.service.AccountService;
 import com.bnpinnovation.turret.service.RoleService;
@@ -17,10 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,9 +26,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,21 +42,28 @@ public class AccountControllerIntegrationTest {
     private PasswordEncoder passwordEncoder;
 
     private AccountTestHelper accountHelper;
+    private JWTTokenTestHelper jwtTokenTestHelper;
 
     @LocalServerPort
     private int port;
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private JWTUtil jwtUtil;
 
     private String adminUsername = "admin";
     private String adminRoleName = "ROLE_ADMIN";
     private String username = "user";
     private String roleName = "ROLE_USER";
 
+
     @BeforeEach
     public void before() {
         if( this.accountHelper == null) {
-            this.accountHelper = new AccountTestHelper(accountService, roleService, passwordEncoder);
+            this.accountHelper = new AccountTestHelper(accountService, roleService, passwordEncoder, port);
+        }
+        if( this.jwtTokenTestHelper == null ) {
+            this.jwtTokenTestHelper = new JWTTokenTestHelper(port);
         }
         accountHelper.createUserAndRole(adminUsername, adminRoleName);
         accountHelper.createUserAndRole(username, roleName);
@@ -77,18 +79,22 @@ public class AccountControllerIntegrationTest {
     @Test
     void test_jwt_login() throws URISyntaxException {
         Algorithm al = Algorithm.HMAC512("hello");
-        String accessToken = getToken(username, username+"p");
+        Tokens tokens = jwtTokenTestHelper.getToken(username, username+"p");
 
-        DecodedJWT decodedJWT = JWT.require(al).build().verify(accessToken);
-        assertEquals(username, decodedJWT.getClaims().get("sub").asString());
+        VerifyResult result = jwtUtil.verify(tokens.getAccessToken());
+        assertTrue(result.isResult());
+
+        DecodedJWT decodedAccessJWT = JWT.require(al).build().verify(tokens.getAccessToken());
+        assertEquals(username, decodedAccessJWT.getClaims().get("sub").asString());
+        assertNotNull(decodedAccessJWT.getId());
     }
 
     @DisplayName("2. admin으로 계정생성")
     @Test
     void test_create_account_by_admin() throws URISyntaxException {
         String testUsername = "aa";
-        String accessToken = getToken(adminUsername, adminUsername+"p");
-        Long userId = newAccount(accessToken,testUsername,testUsername+"p",roleName);
+        Tokens tokens = jwtTokenTestHelper.getToken(adminUsername, adminUsername+"p");
+        Long userId = accountHelper.newAccount(tokens.getAccessToken(),testUsername,testUsername+"p",roleName);
         Optional<Account> searchedAccount = accountService.findAccount(userId);
         assertTrue(searchedAccount.isPresent());
         assertEquals(testUsername, searchedAccount.get().username());
@@ -98,9 +104,9 @@ public class AccountControllerIntegrationTest {
     @Test
     void test_create_account_by_user() throws URISyntaxException {
         String testUsername = "aaa";
-        String accessToken = getToken(username, username+"p");
+        Tokens tokens = jwtTokenTestHelper.getToken(username, username+"p");
         assertThrows(AuthorizationServiceException.class, ()->
-            newAccount(accessToken,testUsername,testUsername+"p", roleName,
+            accountHelper.newAccount(tokens.getAccessToken(),testUsername,testUsername+"p", roleName,
                 new ResponseErrorHandler(){
                     @Override
                     public boolean hasError(ClientHttpResponse response) {
@@ -115,39 +121,5 @@ public class AccountControllerIntegrationTest {
                     }
                 })
         );
-    }
-
-    private URI uri(String path) throws URISyntaxException {
-        return new URI(String.format("http://localhost:%d%s", port, path));
-    }
-
-    private String getToken(String username, String password) throws URISyntaxException {
-        UserLogin login = UserLogin.builder().username(username).password(password).build();
-        HttpEntity<UserLogin> body = new HttpEntity<>(login);
-        ResponseEntity<String> response = restTemplate.exchange(uri("/login"), HttpMethod.POST, body, String.class);
-        assertEquals(200, response.getStatusCodeValue());
-        return response.getHeaders().get(JWTUtil.AUTHENTICATION).get(0).substring(JWTUtil.BEARER.length());
-    }
-
-    private Long newAccount(String token, String name, String password, String roleName) throws URISyntaxException {
-        return newAccount(token,name,password,roleName,null);
-    }
-    private Long newAccount(String token, String name, String password, String roleName,  ResponseErrorHandler errorHandler) throws URISyntaxException {
-        AccountForm.NewAccount newAccount = AccountForm.NewAccount.builder()
-                .username(name)
-                .password(password)
-                .name(name+"d")
-                .roles(Arrays.asList(roleName))
-                .build();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(JWTUtil.AUTHENTICATION, JWTUtil.BEARER+token);
-        HttpEntity<AccountForm.NewAccount> body = new HttpEntity<>(newAccount,headers);
-        if(errorHandler != null) {
-            restTemplate.setErrorHandler(errorHandler);
-        }
-        ResponseEntity<Long> response = restTemplate.exchange(uri("/scv/account"), HttpMethod.POST, body, Long.class);
-        assertEquals(HttpServletResponse.SC_OK, response.getStatusCodeValue());
-        return response.getBody().longValue();
     }
 }
