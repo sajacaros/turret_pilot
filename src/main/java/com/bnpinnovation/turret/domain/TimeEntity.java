@@ -22,4 +22,5 @@ public abstract class TimeEntity {
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP", nullable = false)
     private LocalDateTime updatedDate;
+
 }

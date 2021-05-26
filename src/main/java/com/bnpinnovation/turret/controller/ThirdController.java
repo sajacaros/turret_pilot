@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -47,5 +48,12 @@ public class ThirdController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     public void enableThird(@PathVariable("id") Long thirdId) {
         thirdService.enableThird(thirdId);
+    }
+
+    @PostMapping
+    @RequestMapping("/identity")
+    @PreAuthorize("hasAnyAuthority('ROLE_THIRD')")
+    public ThirdForm.ThirdDetails identity(Principal principal) {
+        return thirdService.getThird(principal.getName()).constructDetailsDto();
     }
 }

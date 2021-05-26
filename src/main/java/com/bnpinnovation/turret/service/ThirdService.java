@@ -40,6 +40,10 @@ public interface ThirdService {
 
         @Autowired
         private ThirdRepository thirdRepository;
+        @Autowired
+        private RoleService roleService;
+
+        private static final String THIRD_ROLE = "ROLE_THIRD";
 
         @Override
         public ThirdForm.ThirdDetails newThird(ThirdForm.New requestForm) {
@@ -54,6 +58,7 @@ public interface ThirdService {
                     .lifeTime(requestForm.getLifeTime())
                     .expiredDate(LocalDateTime.now().plusSeconds(requestForm.getLifeTime()))
                     .build();
+            third.role(roleService.getAccountRole(THIRD_ROLE));
             Third savedThird = thirdRepository.save(third);
             return savedThird.constructDetailsDto();
         }

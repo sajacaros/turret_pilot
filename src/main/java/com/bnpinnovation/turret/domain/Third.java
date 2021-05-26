@@ -3,11 +3,14 @@ package com.bnpinnovation.turret.domain;
 import com.bnpinnovation.turret.dto.ThirdForm;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 
 @Entity
 @NoArgsConstructor
@@ -24,6 +27,10 @@ public class Third extends TimeEntity {
     private Long lifeTime;
     private LocalDateTime expiredDate;
     private boolean enabled;  // 계정 활성화 여부
+
+    @OneToOne
+    @JoinColumn(name = "role_id")
+    private AccountRole role;
 
     @Builder
     public Third(
@@ -42,7 +49,7 @@ public class Third extends TimeEntity {
     }
 
     public UserDetails generateUserDetails() {
-        return new User(symbol,null,enabled,enabled,enabled,enabled,null);
+        return new User(symbol,accessToken,enabled,enabled,enabled,enabled, Collections.singleton(role));
     }
 
     public ThirdForm.ThirdDetails constructDetailsDto() {
@@ -81,5 +88,13 @@ public class Third extends TimeEntity {
 
     public void enable() {
         this.enabled = true;
+    }
+
+    public void role(AccountRole accountRole) {
+        this.role = accountRole;
+    }
+
+    public Collection<? extends GrantedAuthority> roles() {
+        return Collections.singleton(role);
     }
 }

@@ -25,7 +25,6 @@ public class JWTCheckFilter extends BasicAuthenticationFilter {
     private final JWTUtil jwtUtil;
     private final AccountService accountService;
     private final ThirdService thirdService;
-    private final String THIRD_ROLE = "ROLE_THIRD";
 
     public JWTCheckFilter(AuthenticationManager authenticationManager, AccountService accountService, ThirdService thirdService, JWTUtil jwtUtil) {
         super(authenticationManager);
@@ -36,21 +35,23 @@ public class JWTCheckFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        String token = request.getHeader(JWTUtil.AUTHENTICATION_HEADER);
-        if(token == null || !token.startsWith(JWTUtil.BEARER)) {
+        String tokenWithBearer = request.getHeader(JWTUtil.AUTHENTICATION_HEADER);
+        if(tokenWithBearer == null || !tokenWithBearer.startsWith(JWTUtil.BEARER)) {
             chain.doFilter(request,response);
             return;
         }
-        VerifyResult result = jwtUtil.verify(token.substring(JWTUtil.BEARER.length()));
+        String token = tokenWithBearer.substring(JWTUtil.BEARER.length());
+        VerifyResult result = jwtUtil.verify(token);
         if(result.isResult()) {
             switch (result.getOrigin()) {
                 case THIRD:
                     Third third = thirdService.getThird(result.getUsername());
                     if(third.valid(token)) {
                         SecurityContextHolder.getContext().setAuthentication(
-                                new UsernamePasswordAuthenticationToken(third.generateUserDetails(), null, Collections.singleton(new SimpleGrantedAuthority(THIRD_ROLE)))
+                                new UsernamePasswordAuthenticationToken(third.generateUserDetails(), null, third.roles())
                         );
                     }
+                    break;
                 case ORIGIN:
                 default:
                     Account account = accountService.getAccount(result.getUsername());

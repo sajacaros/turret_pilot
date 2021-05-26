@@ -18,10 +18,14 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -105,15 +109,6 @@ public class ThirdControllerIntegrationTest {
         }
     }
 
-    private ThirdForm.ThirdDetails[] findAll() throws URISyntaxException {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(JWTUtil.AUTHENTICATION_HEADER, JWTUtil.BEARER+adminAccessToken);
-        HttpEntity<ThirdForm.New> body = new HttpEntity<>(null,headers);
-        ResponseEntity<ThirdForm.ThirdDetails[]> response = restTemplate.exchange(uri("/third/all"), HttpMethod.GET, body, ThirdForm.ThirdDetails[].class);
-        assertEquals(HttpServletResponse.SC_OK, response.getStatusCodeValue());
-        return response.getBody();
-    }
-
     @DisplayName("4. third key enable")
     @Test
     public void test_enable_third() throws URISyntaxException {
@@ -127,6 +122,74 @@ public class ThirdControllerIntegrationTest {
         for(ThirdForm.ThirdDetails d: detailsList) {
             assertTrue(d.isEnabled());
         }
+    }
+
+    @DisplayName("5. third access")
+    @Test
+    public void test_access_third() throws URISyntaxException {
+        String symbol = "symbol";
+        String name = "name";
+        Long lifetime = 86400L;
+        ThirdForm.ThirdDetails details = newThird(symbol, name, lifetime);
+        ThirdForm.ThirdDetails identityDetails = identity(details.getAccessToken(), new ResponseErrorHandler() {
+            @Override
+            public boolean hasError(ClientHttpResponse response) {
+                return true;
+            }
+
+            @Override
+            public void handleError(ClientHttpResponse response) throws IOException {
+                if (HttpServletResponse.SC_FORBIDDEN == response.getRawStatusCode()) {
+                    throw new AuthorizationServiceException(response.getStatusText());
+                }
+            }
+        });
+        assertEquals(details.getThirdId(), identityDetails.getThirdId());
+    }
+
+    @DisplayName("6. third access by master")
+    @Test
+    public void test_access_third_by_master() {
+        assertThrows(AuthorizationServiceException.class, ()->
+                identity(adminAccessToken, new ResponseErrorHandler(){
+                    @Override
+                    public boolean hasError(ClientHttpResponse response) {
+                        return true;
+                    }
+
+                    @Override
+                    public void handleError(ClientHttpResponse response) throws IOException {
+                        if(HttpServletResponse.SC_FORBIDDEN == response.getRawStatusCode()) {
+                            throw new AuthorizationServiceException(response.getStatusText());
+                        }
+                    }
+                })
+        );
+    }
+
+    private ThirdForm.ThirdDetails identity(String thirdAccessToken) throws URISyntaxException {
+        return identity(thirdAccessToken, null);
+    }
+
+    private ThirdForm.ThirdDetails identity(String thirdAccessToken, ResponseErrorHandler errorHandler) throws URISyntaxException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(JWTUtil.AUTHENTICATION_HEADER, JWTUtil.BEARER+thirdAccessToken);
+        HttpEntity<ThirdForm.New> body = new HttpEntity<>(null,headers);
+        if(errorHandler != null) {
+            restTemplate.setErrorHandler(errorHandler);
+        }
+        ResponseEntity<ThirdForm.ThirdDetails> response = restTemplate.exchange(uri("/third/identity"), HttpMethod.POST, body, ThirdForm.ThirdDetails.class);
+        assertEquals(HttpServletResponse.SC_OK, response.getStatusCodeValue());
+        return response.getBody();
+    }
+
+    private ThirdForm.ThirdDetails[] findAll() throws URISyntaxException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(JWTUtil.AUTHENTICATION_HEADER, JWTUtil.BEARER+adminAccessToken);
+        HttpEntity<ThirdForm.New> body = new HttpEntity<>(null,headers);
+        ResponseEntity<ThirdForm.ThirdDetails[]> response = restTemplate.exchange(uri("/third/all"), HttpMethod.GET, body, ThirdForm.ThirdDetails[].class);
+        assertEquals(HttpServletResponse.SC_OK, response.getStatusCodeValue());
+        return response.getBody();
     }
 
     private void enableThird(Long thirdId) throws URISyntaxException {

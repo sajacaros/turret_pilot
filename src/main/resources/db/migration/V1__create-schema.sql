@@ -34,11 +34,13 @@ create table third (
     life_time bigint,
     created_date TIMESTAMP not null,
     updated_date TIMESTAMP not null,
+    role_id bigint not null,
     primary key (third_id)
 );
 
 alter table user_role add constraint FK_it77eq964jhfqtu54081ebtio foreign key (role_id) references account_role (role_id);
 alter table user_role add constraint FK_apcc8lxk2xnug8377fatvbn04 foreign key (user_id) references account (account_id);
+alter table third add constraint FK_iecz8qxk2fnughfqtu54081ebti foreign key (role_id) references account_role (role_id);
 alter table third add constraint UK_go9mqeyifewi6piiwvbw3iwwy unique (symbol);
 ALTER TABLE account_role ADD CONSTRAINT UK_pt47eq964jhfqtu54081ebti3 UNIQUE (role_name);
 ALTER TABLE account ADD CONSTRAINT UK_z67aeq934jh4qau54081ebtir UNIQUE (username);
