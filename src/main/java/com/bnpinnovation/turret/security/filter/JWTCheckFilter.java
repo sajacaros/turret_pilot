@@ -1,12 +1,15 @@
 package com.bnpinnovation.turret.security.filter;
 
 import com.bnpinnovation.turret.domain.Account;
+import com.bnpinnovation.turret.domain.Third;
 import com.bnpinnovation.turret.dto.VerifyResult;
 import com.bnpinnovation.turret.security.JWTUtil;
 import com.bnpinnovation.turret.service.AccountService;
+import com.bnpinnovation.turret.service.ThirdService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
@@ -15,15 +18,19 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collections;
 
 @Slf4j
 public class JWTCheckFilter extends BasicAuthenticationFilter {
     private final JWTUtil jwtUtil;
     private final AccountService accountService;
+    private final ThirdService thirdService;
+    private final String THIRD_ROLE = "ROLE_THIRD";
 
-    public JWTCheckFilter(AuthenticationManager authenticationManager, AccountService accountService, JWTUtil jwtUtil) {
+    public JWTCheckFilter(AuthenticationManager authenticationManager, AccountService accountService, ThirdService thirdService, JWTUtil jwtUtil) {
         super(authenticationManager);
         this.accountService = accountService;
+        this.thirdService = thirdService;
         this.jwtUtil = jwtUtil;
     }
 
@@ -36,10 +43,21 @@ public class JWTCheckFilter extends BasicAuthenticationFilter {
         }
         VerifyResult result = jwtUtil.verify(token.substring(JWTUtil.BEARER.length()));
         if(result.isResult()) {
-            Account account = accountService.getAccount(result.getUsername());
-            SecurityContextHolder.getContext().setAuthentication(
-                    new UsernamePasswordAuthenticationToken(account.generateUserDetails(), null, account.roles())
-            );
+            switch (result.getOrigin()) {
+                case THIRD:
+                    Third third = thirdService.getThird(result.getUsername());
+                    if(third.valid(token)) {
+                        SecurityContextHolder.getContext().setAuthentication(
+                                new UsernamePasswordAuthenticationToken(third.generateUserDetails(), null, Collections.singleton(new SimpleGrantedAuthority(THIRD_ROLE)))
+                        );
+                    }
+                case ORIGIN:
+                default:
+                    Account account = accountService.getAccount(result.getUsername());
+                    SecurityContextHolder.getContext().setAuthentication(
+                            new UsernamePasswordAuthenticationToken(account.generateUserDetails(), null, account.roles())
+                    );
+            }
         }
 
         super.doFilterInternal(request, response, chain);

@@ -51,7 +51,7 @@ public class RefreshableJWTLoginFilter extends UsernamePasswordAuthenticationFil
         // id password login
         if(userLogin.isLogin()){
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userLogin.getUsername(), userLogin.getPassword(), null
+                    userLogin.getUsername(), userLogin.getPassword()
             );
             return authenticationManager.authenticate(authToken);
         } else if(userLogin.isRefresh()){

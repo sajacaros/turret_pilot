@@ -8,10 +8,7 @@ import com.bnpinnovation.turret.helper.JWTTokenTestHelper;
 import com.bnpinnovation.turret.helper.Tokens;
 import com.bnpinnovation.turret.service.AccountService;
 import com.bnpinnovation.turret.service.RoleService;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -49,6 +46,11 @@ public class RefreshTokenTest {
         }
         accountHelper.createUserAndRole(adminUsername, adminRoleName);
         accountHelper.createUserAndRole(username, roleName);
+    }
+
+    @AfterEach
+    void after() {
+        accountService.removeAll();
     }
 
     @DisplayName("1. refresh token으로 access token 얻기")

@@ -22,7 +22,6 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.ResponseErrorHandler;
-import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -46,8 +45,6 @@ public class AccountControllerIntegrationTest {
 
     @LocalServerPort
     private int port;
-    @Autowired
-    private RestTemplate restTemplate;
     @Autowired
     private JWTUtil jwtUtil;
 

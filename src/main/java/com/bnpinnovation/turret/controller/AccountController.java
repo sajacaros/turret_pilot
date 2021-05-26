@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/scv")
+@RequestMapping("/account")
 public class AccountController {
     private final AccountService accountService;
 
@@ -18,7 +18,7 @@ public class AccountController {
     }
 
     @PostMapping
-    @RequestMapping("/account")
+    @RequestMapping("")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     public Long newAccount(@RequestBody AccountForm.NewAccount account) {
         return accountService.newAccount(account);

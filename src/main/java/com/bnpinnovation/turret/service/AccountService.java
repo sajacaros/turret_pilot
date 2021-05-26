@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,9 +47,15 @@ public interface AccountService extends UserDetailsService {
 
         @Override
         public Long newAccount(AccountForm.NewAccount accountDto) {
-            List<AccountRole> roleList = accountDto.getRoles().stream()
-                    .map(r->getAccountRole(r))
-                    .collect(Collectors.toList());
+            List<AccountRole> roleList;
+            if(accountDto.getRoles() == null || accountDto.getRoles().isEmpty()) {
+                roleList = Collections.emptyList();
+            } else {
+                roleList = accountDto.getRoles().stream()
+                        .map(r->getAccountRole(r))
+                        .collect(Collectors.toList());
+            }
+
 
             Account account = Account.builder()
                     .username(accountDto.getUsername())

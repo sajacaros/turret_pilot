@@ -43,7 +43,7 @@ public class RoleTest {
     @DisplayName("1. 존재하지 않는 role을 조회한다.")
     @Test
     void test_role_not_exist() {
-        assertThrows( EntityNotFoundException.class, ()->roleService.getAccountRole(roleName));
+        assertThrows( EntityNotFoundException.class, ()->roleService.getAccountRole(roleName+"t"));
     }
 
     @DisplayName("2. role을 생성한다.")

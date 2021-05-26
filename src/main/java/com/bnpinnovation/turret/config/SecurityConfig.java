@@ -5,6 +5,7 @@ import com.bnpinnovation.turret.security.JWTUtil;
 import com.bnpinnovation.turret.security.filter.JWTCheckFilter;
 import com.bnpinnovation.turret.security.filter.RefreshableJWTLoginFilter;
 import com.bnpinnovation.turret.service.AccountService;
+import com.bnpinnovation.turret.service.ThirdService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private ThirdService thirdService;
 
     @Autowired
     private ObjectMapper mapper;
@@ -85,7 +88,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     public Filter authorizationFilter() throws Exception {
-        return new JWTCheckFilter(authenticationManager(), accountService, jwtUtil);
+        return new JWTCheckFilter(authenticationManager(), accountService, thirdService, jwtUtil);
     }
 
 

@@ -103,7 +103,7 @@ public class AccountTestHelper {
         if(errorHandler != null) {
             restTemplate.setErrorHandler(errorHandler);
         }
-        ResponseEntity<Long> response = restTemplate.exchange(uri("/scv/account"), HttpMethod.POST, body, Long.class);
+        ResponseEntity<Long> response = restTemplate.exchange(uri("/account"), HttpMethod.POST, body, Long.class);
         assertEquals(HttpServletResponse.SC_OK, response.getStatusCodeValue());
         return response.getBody().longValue();
     }

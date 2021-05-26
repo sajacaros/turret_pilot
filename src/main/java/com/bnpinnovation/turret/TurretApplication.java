@@ -1,5 +1,6 @@
 package com.bnpinnovation.turret;
 
+import com.bnpinnovation.turret.dto.AccountForm;
 import com.bnpinnovation.turret.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -21,7 +22,6 @@ public class TurretApplication implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-//        ne
-//        accountService.newAccount()
+//        accountService.newAccount(AccountForm.NewAccount.builder().username("test").password("bnp@1234").name("testn").build());
     }
 }
