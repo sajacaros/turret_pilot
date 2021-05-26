@@ -18,8 +18,8 @@ public class JWTUtil {
     public static final String REFRESH_HEADER = "refresh-token";
     public static final String BEARER = "Bearer ";
     public static final String ORIGIN = "origin";
-    private final String secret = "hello";
-    private final Algorithm al = Algorithm.HMAC512(secret);
+    public static final String SECRET = "72978B1C6BB9C837B31A395EE0B83A70";
+    private final Algorithm al = Algorithm.HMAC512(SECRET);
     @Value("${life.time.access:30}") // 30s
     private Long accessLifeTime_s;
     @Value("${life.time.access:3600}") // 1h, 60*60s
@@ -47,10 +47,6 @@ public class JWTUtil {
 
         public Origin origin() {
             return this.origin;
-        }
-
-        public boolean isOrigin() {
-            return this.origin.isOrigin();
         }
     }
 

@@ -6,6 +6,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bnpinnovation.turret.helper.AccountTestHelper;
 import com.bnpinnovation.turret.helper.JWTTokenTestHelper;
 import com.bnpinnovation.turret.helper.Tokens;
+import com.bnpinnovation.turret.security.JWTUtil;
 import com.bnpinnovation.turret.service.AccountService;
 import com.bnpinnovation.turret.service.RoleService;
 import org.junit.jupiter.api.AfterEach;
@@ -69,7 +70,7 @@ public class JWTLoginFilterTest {
     @DisplayName("1. jwt로 로그인 시도")
     @Test
     void test_jwtLogin() throws URISyntaxException {
-        Algorithm al = Algorithm.HMAC512("hello");
+        Algorithm al = Algorithm.HMAC512(JWTUtil.SECRET);
         Tokens tokens = jwtTokenTestHelper.getToken(username, username+"p");
 
         DecodedJWT decodedJWT = JWT.require(al).build().verify(tokens.getAccessToken());

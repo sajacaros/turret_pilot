@@ -75,7 +75,7 @@ public class AccountControllerIntegrationTest {
     @DisplayName("1. jwt로 로그인 시도")
     @Test
     void test_jwt_login() throws URISyntaxException {
-        Algorithm al = Algorithm.HMAC512("hello");
+        Algorithm al = Algorithm.HMAC512(JWTUtil.SECRET);
         Tokens tokens = jwtTokenTestHelper.getToken(username, username+"p");
 
         VerifyResult result = jwtUtil.verify(tokens.getAccessToken());
